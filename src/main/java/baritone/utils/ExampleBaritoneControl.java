@@ -55,7 +55,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
     }
 
     public void initAndRegister() {
-        Baritone.INSTANCE.registerBehavior(this);
+//        Baritone.INSTANCE.registerBehavior(this);
+        Baritone.INSTANCE.registerBehavior(new BrigadierBaritoneControl());
     }
 
     @Override
