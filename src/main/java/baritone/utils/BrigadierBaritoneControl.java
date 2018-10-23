@@ -18,14 +18,12 @@
 package baritone.utils;
 
 import baritone.api.event.events.ChatEvent;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalBlock;
-import baritone.api.pathing.goals.GoalXZ;
-import baritone.api.pathing.goals.GoalYLevel;
+import baritone.api.pathing.goals.*;
 import baritone.behavior.Behavior;
 import baritone.behavior.PathingBehavior;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.CommandNode;
 
 import static com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
@@ -56,6 +54,8 @@ public class BrigadierBaritoneControl extends Behavior implements Helper {
             )
         );
 
+        CommandNode<Object> goalClearNode;
+
         dispatcher.register(literal("goal")
             .then(argument("yLevel", integer())
                 .executes(c -> {
@@ -81,24 +81,20 @@ public class BrigadierBaritoneControl extends Behavior implements Helper {
                     )
                 )
             )
-            // There should be a way to have multiple literals for a single command, not sure exactly how yet
-            .then(literal("none")
+            .then(goalClearNode = literal("clear")
                 .executes(c -> {
                     setGoal(null);
                     return 0;
-                })
-            )
-            .then(literal("clear")
-                .executes(c -> {
-                    setGoal(null);
-                    return 0;
-                })
+                }).build()
             )
             .executes(c -> {
                 setGoal(new GoalBlock(playerFeet()));
                 return 0;
             })
         );
+
+        // I dislike this
+        dispatcher.register(literal("none").redirect(goalClearNode));
 
         dispatcher.register(literal("path").executes(c -> {
             if (!PathingBehavior.INSTANCE.path()) {
@@ -112,6 +108,12 @@ public class BrigadierBaritoneControl extends Behavior implements Helper {
                     }
                 }
             }
+            return 0;
+        }));
+
+        dispatcher.register(literal("axis").executes(c -> {
+            PathingBehavior.INSTANCE.setGoal(new GoalAxis());
+            PathingBehavior.INSTANCE.path();
             return 0;
         }));
     }
