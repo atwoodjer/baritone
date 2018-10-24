@@ -128,123 +128,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect(setting.toString());
             return true;
         }
-
-        if (msg.startsWith("goal")) {
-            String[] params = msg.substring(4).trim().split(" ");
-            if (params[0].equals("")) {
-                params = new String[]{};
-            }
-            Goal goal;
-            try {
-                switch (params.length) {
-                    case 0:
-                        goal = new GoalBlock(playerFeet());
-                        break;
-                    case 1:
-                        if (params[0].equals("clear") || params[0].equals("none")) {
-                            goal = null;
-                        } else {
-                            goal = new GoalYLevel(Integer.parseInt(params[0]));
-                        }
-                        break;
-                    case 2:
-                        goal = new GoalXZ(Integer.parseInt(params[0]), Integer.parseInt(params[1]));
-                        break;
-                    case 3:
-                        goal = new GoalBlock(new BlockPos(Integer.parseInt(params[0]), Integer.parseInt(params[1]), Integer.parseInt(params[2])));
-                        break;
-                    default:
-                        logDirect("unable to understand lol");
-                        return true;
-                }
-            } catch (NumberFormatException ex) {
-                logDirect("unable to parse integer " + ex);
-                return true;
-            }
-            PathingBehavior.INSTANCE.setGoal(goal);
-            logDirect("Goal: " + goal);
-            return true;
-        }
-        if (msg.equals("path")) {
-            if (!PathingBehavior.INSTANCE.path()) {
-                if (PathingBehavior.INSTANCE.getGoal() == null) {
-                    logDirect("No goal.");
-                } else {
-                    if (PathingBehavior.INSTANCE.getGoal().isInGoal(playerFeet())) {
-                        logDirect("Already in goal");
-                    } else {
-                        logDirect("Currently executing a path. Please cancel it first.");
-                    }
-                }
-            }
-            return true;
-        }
-        if (msg.equals("repack") || msg.equals("rescan")) {
-            ChunkProviderClient cli = world().getChunkProvider();
-            int playerChunkX = playerFeet().getX() >> 4;
-            int playerChunkZ = playerFeet().getZ() >> 4;
-            int count = 0;
-            for (int x = playerChunkX - 40; x <= playerChunkX + 40; x++) {
-                for (int z = playerChunkZ - 40; z <= playerChunkZ + 40; z++) {
-                    Chunk chunk = cli.getLoadedChunk(x, z);
-                    if (chunk != null) {
-                        count++;
-                        WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().queueForPacking(chunk);
-                    }
-                }
-            }
-            logDirect("Queued " + count + " chunks for repacking");
-            return true;
-        }
-        if (msg.equals("axis")) {
-            PathingBehavior.INSTANCE.setGoal(new GoalAxis());
-            PathingBehavior.INSTANCE.path();
-            return true;
-        }
-        if (msg.equals("cancel") || msg.equals("stop")) {
-            MineBehavior.INSTANCE.cancel();
-            FollowBehavior.INSTANCE.cancel();
-            PathingBehavior.INSTANCE.cancel();
-            logDirect("ok canceled");
-            return true;
-        }
-        if (msg.equals("forcecancel")) {
-            MineBehavior.INSTANCE.cancel();
-            FollowBehavior.INSTANCE.cancel();
-            PathingBehavior.INSTANCE.cancel();
-            AbstractNodeCostSearch.forceCancel();
-            PathingBehavior.INSTANCE.forceCancel();
-            logDirect("ok force canceled");
-            return true;
-        }
-        if (msg.equals("gc")) {
-            System.gc();
-            logDirect("Called System.gc();");
-            return true;
-        }
-        if (msg.equals("invert")) {
-            Goal goal = PathingBehavior.INSTANCE.getGoal();
-            BlockPos runAwayFrom;
-            if (goal instanceof GoalXZ) {
-                runAwayFrom = new BlockPos(((GoalXZ) goal).getX(), 0, ((GoalXZ) goal).getZ());
-            } else if (goal instanceof GoalBlock) {
-                runAwayFrom = ((GoalBlock) goal).getGoalPos();
-            } else {
-                logDirect("Goal must be GoalXZ or GoalBlock to invert");
-                logDirect("Inverting goal of player feet");
-                runAwayFrom = playerFeet();
-            }
-            PathingBehavior.INSTANCE.setGoal(new GoalRunAway(1, runAwayFrom) {
-                @Override
-                public boolean isInGoal(BlockPos pos) {
-                    return false;
-                }
-            });
-            if (!PathingBehavior.INSTANCE.path()) {
-                logDirect("Currently executing a path. Please cancel it first.");
-            }
-            return true;
-        }
         if (msg.startsWith("follow")) {
             String name = msg.substring(6).trim();
             Optional<Entity> toFollow = Optional.empty();
@@ -268,28 +151,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             logDirect("Following " + toFollow.get());
             return true;
         }
-        if (msg.equals("reloadall")) {
-            WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().reloadAllFromDisk();
-            logDirect("ok");
-            return true;
-        }
-        if (msg.equals("saveall")) {
-            WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().save();
-            logDirect("ok");
-            return true;
-        }
-        if (msg.startsWith("find")) {
-            String blockType = msg.substring(4).trim();
-            LinkedList<BlockPos> locs = WorldProvider.INSTANCE.getCurrentWorld().getCachedWorld().getLocationsOf(blockType, 1, 4);
-            logDirect("Have " + locs.size() + " locations");
-            for (BlockPos pos : locs) {
-                Block actually = BlockStateInterface.get(pos).getBlock();
-                if (!ChunkPacker.blockToString(actually).equalsIgnoreCase(blockType)) {
-                    System.out.println("Was looking for " + blockType + " but actually found " + actually + " " + ChunkPacker.blockToString(actually));
-                }
-            }
-            return true;
-        }
         if (msg.startsWith("mine")) {
             String[] blockTypes = msg.substring(4).trim().split(" ");
             try {
@@ -309,16 +170,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             }
             MineBehavior.INSTANCE.mine(0, blockTypes);
             logDirect("Started mining blocks of type " + Arrays.toString(blockTypes));
-            return true;
-        }
-        if (msg.startsWith("thisway")) {
-            try {
-                Goal goal = GoalXZ.fromDirection(playerFeetAsVec(), player().rotationYaw, Double.parseDouble(msg.substring(7).trim()));
-                PathingBehavior.INSTANCE.setGoal(goal);
-                logDirect("Goal: " + goal);
-            } catch (NumberFormatException ex) {
-                logDirect("Error unable to parse '" + msg.substring(7).trim() + "' to a double.");
-            }
             return true;
         }
         if (msg.startsWith("list") || msg.startsWith("get ") || msg.startsWith("show")) {
@@ -407,63 +258,6 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
                 }
             }
             return true;
-        }
-        if (msg.equals("spawn") || msg.equals("bed")) {
-            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.BED);
-            if (waypoint == null) {
-                BlockPos spawnPoint = player().getBedLocation();
-                // for some reason the default spawnpoint is underground sometimes
-                Goal goal = new GoalXZ(spawnPoint.getX(), spawnPoint.getZ());
-                logDirect("spawn not saved, defaulting to world spawn. set goal to " + goal);
-                PathingBehavior.INSTANCE.setGoal(goal);
-            } else {
-                Goal goal = new GoalBlock(waypoint.getLocation());
-                PathingBehavior.INSTANCE.setGoal(goal);
-                logDirect("Set goal to most recent bed " + goal);
-            }
-            return true;
-        }
-        if (msg.equals("sethome")) {
-            WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("", Waypoint.Tag.HOME, playerFeet()));
-            logDirect("Saved. Say home to set goal.");
-            return true;
-        }
-        if (msg.equals("home")) {
-            IWaypoint waypoint = WorldProvider.INSTANCE.getCurrentWorld().getWaypoints().getMostRecentByTag(Waypoint.Tag.HOME);
-            if (waypoint == null) {
-                logDirect("home not saved");
-            } else {
-                Goal goal = new GoalBlock(waypoint.getLocation());
-                PathingBehavior.INSTANCE.setGoal(goal);
-                PathingBehavior.INSTANCE.path();
-                logDirect("Going to saved home " + goal);
-            }
-            return true;
-        }
-        if (msg.equals("costs")) {
-            List<Movement> moves = Stream.of(Moves.values()).map(x -> x.apply0(playerFeet())).collect(Collectors.toCollection(ArrayList::new));
-            while (moves.contains(null)) {
-                moves.remove(null);
-            }
-            moves.sort(Comparator.comparingDouble(Movement::getCost));
-            for (Movement move : moves) {
-                String[] parts = move.getClass().toString().split("\\.");
-                double cost = move.getCost();
-                String strCost = cost + "";
-                if (cost >= ActionCosts.COST_INF) {
-                    strCost = "IMPOSSIBLE";
-                }
-                logDirect(parts[parts.length - 1] + " " + move.getDest().getX() + "," + move.getDest().getY() + "," + move.getDest().getZ() + " " + strCost);
-            }
-            return true;
-        }
-        if (msg.equals("pause")) {
-            boolean enabled = PathingBehavior.INSTANCE.toggle();
-            logDirect("Pathing Behavior has " + (enabled ? "resumed" : "paused") + ".");
-            return true;
-        }
-        if (msg.equals("damn")) {
-            logDirect("daniel");
         }
         return false;
     }
