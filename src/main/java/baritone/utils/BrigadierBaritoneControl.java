@@ -32,9 +32,13 @@ import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.block.Block;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.ChunkProviderClient;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
@@ -49,8 +53,6 @@ import java.util.stream.Stream;
 import static com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.string;
-import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
-import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
 
 /**
  * @author Brady
@@ -58,10 +60,10 @@ import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
  */
 public class BrigadierBaritoneControl extends Behavior implements Helper {
 
-    private final CommandDispatcher<Object> dispatcher = new CommandDispatcher<>();
+    private final CommandDispatcher<EntityPlayerSP> dispatcher = new CommandDispatcher<>();
 
     BrigadierBaritoneControl() {
-        CommandNode<Object> goalClearNode, cancelNode, spawnNode, repackNode;
+        CommandNode<EntityPlayerSP> goalClearNode, cancelNode, spawnNode, repackNode;
 
         dispatcher.register(literal("thisway")
             .then(argument("distance", doubleArg(0.0))
@@ -320,5 +322,13 @@ public class BrigadierBaritoneControl extends Behavior implements Helper {
     private void setGoal(Goal goal) {
         PathingBehavior.INSTANCE.setGoal(goal);
         logDirect("Goal: " + goal);
+    }
+
+    private static LiteralArgumentBuilder<EntityPlayerSP> literal(String name) {
+        return LiteralArgumentBuilder.literal(name);
+    }
+
+    private static <T> RequiredArgumentBuilder<EntityPlayerSP, T> argument(final String name, final ArgumentType<T> type) {
+        return RequiredArgumentBuilder.argument(name, type);
     }
 }
