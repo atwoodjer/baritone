@@ -20,15 +20,16 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
+import baritone.bot.spec.EntityBot;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.World;
 
 /**
  * @author Brady
@@ -55,7 +56,7 @@ public interface Helper {
         if (!mc.isCallingFromMinecraftThread()) {
             throw new IllegalStateException("h00000000");
         }
-        return mc.player;
+        return EntityBot.LOL == null ? mc.player : EntityBot.LOL;
     }
 
     default PlayerControllerMP playerController() { // idk
@@ -65,11 +66,11 @@ public interface Helper {
         return mc.playerController;
     }
 
-    default WorldClient world() {
+    default World world() {
         if (!mc.isCallingFromMinecraftThread()) {
             throw new IllegalStateException("h00000000");
         }
-        return mc.world;
+        return EntityBot.DUB == null ? mc.world : EntityBot.DUB;
     }
 
     default BetterBlockPos playerFeet() {

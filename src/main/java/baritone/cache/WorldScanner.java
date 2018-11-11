@@ -43,7 +43,7 @@ public enum WorldScanner implements IWorldScanner, Helper {
         if (blocks.isEmpty()) {
             return res;
         }
-        ChunkProviderClient chunkProvider = world().getChunkProvider();
+        ChunkProviderClient chunkProvider = (ChunkProviderClient) world().getChunkProvider();
 
         int maxSearchRadiusSq = maxSearchRadius * maxSearchRadius;
         int playerChunkX = playerFeet().getX() >> 4;

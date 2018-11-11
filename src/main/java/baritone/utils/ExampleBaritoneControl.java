@@ -167,7 +167,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             try {
                 switch (params.length) {
                     case 0:
-                        goal = new GoalBlock(playerFeet());
+                        goal = new GoalBlock(new BlockPos(mc.player));
                         break;
                     case 1:
                         if (params[0].equals("clear") || params[0].equals("none")) {
@@ -207,7 +207,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return true;
         }
         if (msg.equals("repack") || msg.equals("rescan")) {
-            ChunkProviderClient cli = world().getChunkProvider();
+            ChunkProviderClient cli = (ChunkProviderClient) world().getChunkProvider();
             int playerChunkX = playerFeet().getX() >> 4;
             int playerChunkZ = playerFeet().getZ() >> 4;
             int count = 0;

@@ -53,7 +53,8 @@ public final class InputOverrideHandler extends Behavior implements Helper {
      * @return Whether or not it is being forced down
      */
     public final boolean isInputForcedDown(KeyBinding key) {
-        return isInputForcedDown(Input.getInputForBind(key));
+        return false;
+//        return isInputForcedDown(Input.getInputForBind(key));
     }
 
     /**

@@ -60,6 +60,9 @@ import javax.annotation.Nullable;
 @SuppressWarnings("EntityConstructor")
 public class EntityBot extends EntityPlayerSP {
 
+    public static EntityBot LOL = null;
+    public static BotWorld DUB = null;
+
     private final IBaritoneUser user;
     private NetworkPlayerInfo playerInfo;
     private GameType gameType;
@@ -68,6 +71,9 @@ public class EntityBot extends EntityPlayerSP {
         super(mc, world, netHandlerPlayClient, statisticsManager, recipeBook);
         this.user = user;
         this.movementInput = new BotMovementInput(this.user);
+
+        LOL = this;
+        DUB = (BotWorld) world;
     }
 
     @Override

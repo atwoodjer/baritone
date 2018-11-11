@@ -66,6 +66,11 @@ public final class GameEventHandler implements IGameEventListener, Helper {
 
     @Override
     public final void onSendChatMessage(ChatEvent event) {
+        if (event.getPlayer() == mc.player && event.getPlayer() != player()) {
+            player().sendChatMessage(event.getMessage());
+            event.cancel();
+        }
+
         // TODO temporary bot event call prevention
         if (event.getPlayer() != player())
             return;
